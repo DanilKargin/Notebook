@@ -23,7 +23,7 @@ public class Notebook implements IStorage {
             return false;
     }
     public void loadData(String string){
-            String[] stringArray = string.split("\n");
+            String[] stringArray = string.split(";");
             for (String item : stringArray) {
                 String[] itemStringArray = item.split(" ", 2);
                 if (itemStringArray.length == 2)
@@ -42,7 +42,8 @@ public class Notebook implements IStorage {
                 result.append(entry.getKey());
                 result.append(" ");
                 result.append(item);
-                result.append('\n');
+                result.append(";");
+                result.append("\n");
             }
         }
         return result.toString();

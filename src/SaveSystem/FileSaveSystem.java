@@ -1,45 +1,65 @@
 package SaveSystem;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 public class FileSaveSystem {
-    private final static String PATH = "data.txt";
-    public static void saveData(String data) {
-        FileOutputStream outputStream = null;
-        try{
-            File myFile = new File(PATH);
-            outputStream = new FileOutputStream(myFile);
-            byte[] buffer = data.getBytes();
-            outputStream.write(buffer);
-            outputStream.close();
-        }catch (IOException e){
-            System.out.println("Ошибка сохранения: " + e.getMessage());
-        }finally {
+    private final static String PATH = "data.enc";
+    private final static String key = "secretKey1234567";
+    private static Cipher cipher;
+    private static SecretKey secretKey;
 
+    static {
+        try {
+            secretKey = new SecretKeySpec(key.getBytes(), "AES");
+            cipher = Cipher.getInstance("AES");
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println(e.getMessage());
+        } catch (NoSuchPaddingException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+    public static void saveData(String data) {
+        try {
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+
+            try (FileOutputStream fileOut = new FileOutputStream(PATH);
+                 CipherOutputStream cipherOut = new CipherOutputStream(fileOut, cipher)) {
+                cipherOut.write(data.getBytes());
+            }
+        }catch (FileNotFoundException e) {
+            System.out.println(e.getMessage());
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        } catch (InvalidKeyException e) {
+            System.out.println(e.getMessage());
         }
     }
 
     public static String loadData() {
-        FileInputStream inputStream = null;
-        try{
-            File myFile = new File(PATH);
-            inputStream = new FileInputStream(myFile);
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            StringBuilder result = new StringBuilder();
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                result.append(new String(buffer, 0, bytesRead));
+        StringBuilder result = new StringBuilder();
+        try (FileInputStream fileIn = new FileInputStream(PATH)) {
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            try (
+                    CipherInputStream cipherIn = new CipherInputStream(fileIn, cipher);
+                    InputStreamReader inputReader = new InputStreamReader(cipherIn);
+                    BufferedReader reader = new BufferedReader(inputReader)
+            ) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    result.append(line);
+                }
             }
-            inputStream.close();
-            return result.toString();
-        }catch(IOException e){
-            System.out.println("Ошибка загрузки: " + e.getMessage());
-            return "";
-        }finally {
 
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }catch (InvalidKeyException e) {
+            System.out.println(e.getMessage());
         }
+        return result.toString();
     }
 }
