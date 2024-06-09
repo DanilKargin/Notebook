@@ -32,4 +32,13 @@ public class AdvancedNotebook extends Notebook{
         }
         return date;
     }
+    public String getRecordsByDate(LocalDate date){
+        List<String> records = super.records.get(date);
+        StringBuilder sb = new StringBuilder();
+        for(var item : records){
+            sb.append(item);
+            sb.append('\n');
+        }
+        return sb.toString();
+    }
 }
