@@ -1,30 +1,32 @@
-import Interfaces.ISaveSystem;
+package SaveSystem;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class FileSaveSystem implements ISaveSystem {
-
-    @Override
-    public void SaveData(String data) {
-        try {
-            File myFile = new File("data.txt");
-            FileOutputStream outputStream = new FileOutputStream(myFile);
+public class FileSaveSystem {
+    private final static String PATH = "data.txt";
+    public static void saveData(String data) {
+        FileOutputStream outputStream = null;
+        try{
+            File myFile = new File(PATH);
+            outputStream = new FileOutputStream(myFile);
             byte[] buffer = data.getBytes();
             outputStream.write(buffer);
             outputStream.close();
         }catch (IOException e){
             System.out.println("Ошибка сохранения: " + e.getMessage());
+        }finally {
+
         }
     }
 
-    @Override
-    public String LoadData() {
-        try {
-            File myFile = new File("data.txt");
-            FileInputStream inputStream = new FileInputStream(myFile);
+    public static String loadData() {
+        FileInputStream inputStream = null;
+        try{
+            File myFile = new File(PATH);
+            inputStream = new FileInputStream(myFile);
             byte[] buffer = new byte[1024];
             int bytesRead;
             StringBuilder result = new StringBuilder();
@@ -36,6 +38,8 @@ public class FileSaveSystem implements ISaveSystem {
         }catch(IOException e){
             System.out.println("Ошибка загрузки: " + e.getMessage());
             return "";
+        }finally {
+
         }
     }
 }
